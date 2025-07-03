@@ -459,12 +459,22 @@ class AutoHB
         if lang == "scan"
             return lang
         end
-        subtitles = @titles[@titles_to_rip.first].subtitles
+        title = @titles_to_rip.first ? @titles_to_rip.first.to_i : 1
+        subtitles = @titles[title].subtitles
         subtitles.each do |subtitle|
+            if subtitle.nil?
+                next
+            end
             if subtitle.lang == lang
                 return subtitle.number
             end
         end
+        langs = subtitles.reject(&:nil?).collect(&:lang)
+        raise <<~EX.chomp
+              no subtitle language "#{lang}" found (for track #{title}).
+              valid --subtitle= options (for that track, anyway):
+              #{langs.inspect}
+              EX
     end
 
     def get_subtitles
